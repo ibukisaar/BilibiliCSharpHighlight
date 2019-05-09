@@ -29,7 +29,7 @@ namespace Saar {
 	/// <see cref=""System.ConsoleColor""/><seealso cref=""System.Console""/>
 	/// </summary>
 	unsafe class Program {
-		public struct Struct : IEquatable<Struct>, IDisposable {
+		struct Struct : IEquatable<Struct>, IDisposable {
 			public Struct[] test;
 			/// <param name=""other"">other</param>
 			bool IEquatable<Struct>.Equals(Struct other) => throw new NotImplementedException();
@@ -91,12 +91,8 @@ class Test {
 			var path = @"D:\MyDocuments\Documents\Visual Studio 2019\Projects\B站专栏CSharp代码高亮\B站专栏CSharp代码高亮";
 			var selfCode = File.ReadAllText($@"{path}\BilibiliCSharpHighlight.cs");
 			var refs = Directory.GetFiles(Environment.CurrentDirectory).Where(f => Path.GetExtension(f) == ".dll" && !f.StartsWith("B站"));
-			var highlight = new BilibiliCSharpHighlight(selfCode, withReferences: refs);
+			var highlight = new BilibiliCSharpHighlight(code, showError: true, withReferences: refs);
 			var html = highlight.ToHtml();
-			//foreach (var name in Enum.GetNames(typeof(SyntaxKind))) {
-			//	if (!name.StartsWith("Xml") && !name.Contains("Comment")) continue;
-			//	Console.WriteLine($"case SyntaxKind.{name}:");
-			//}
 			Console.WriteLine(html);
 			File.WriteAllText(@"Z:\highlight\csharp.html", $@"
 <html>
@@ -110,6 +106,7 @@ class Test {
 </body>
 </html>
 ");
+
 		}
 	}
 }
