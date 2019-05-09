@@ -15,28 +15,28 @@ namespace Calculator {
 		/// </summary>
 		/// <remarks>
 		/// define
-		///		: param* ':' addSub
-		///		;
-		///	param
-		///		: Id
-		///		;
-		///	addSub
-		///		: mulDiv (('+'|'-') mulDiv)*
-		///		;
-		///	mulDiv
-		///		: pow (('*'|'/') pow)*
-		///		;
-		///	pow
-		///		: unary ('^' pow)?
-		///		;
-		///	unary
-		///		: ('+'|'-') unary
-		///		| atom
-		///		;
-		///	atom
-		///		: Id
-		///		| Number
-		///		;
+		/// 	: param* ':' addSub
+		/// 	;
+		/// param
+		/// 	: Id
+		/// 	;
+		/// addSub
+		/// 	: mulDiv (('+'|'-') mulDiv)*
+		/// 	;
+		/// mulDiv
+		/// 	: pow (('*'|'/') pow)*
+		/// 	;
+		/// pow
+		/// 	: unary ('^' pow)?
+		/// 	;
+		/// unary
+		/// 	: ('+'|'-') unary
+		/// 	| atom
+		/// 	;
+		/// atom
+		/// 	: Id
+		/// 	| Number
+		/// 	;
 		/// </remarks>
 		class Parser {
 			public class ParseException : Exception {
