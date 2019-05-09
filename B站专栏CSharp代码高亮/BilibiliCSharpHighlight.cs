@@ -98,6 +98,7 @@ namespace B站专栏CSharp代码高亮 {
 			Class,
 			Struct,
 			Enum,
+			Delegate,
 			EnumField,
 			Interface,
 			Method,
@@ -138,6 +139,7 @@ namespace B站专栏CSharp代码高亮 {
 			styleTable[(int)StyleIndex.Class] = MakeTokenStyle(Styles.ColorLightBlue2, Styles.Opacity);
 			styleTable[(int)StyleIndex.Struct] = MakeTokenStyle(Styles.ColorGreen1, Styles.Opacity);
 			styleTable[(int)StyleIndex.Enum] = MakeTokenStyle(Styles.ColorYellow1, Styles.Opacity);
+			styleTable[(int)StyleIndex.Delegate] = MakeTokenStyle(Styles.ColorPurple2);
 			styleTable[(int)StyleIndex.EnumField] = MakeTokenStyle(Styles.ColorYellow3);
 			styleTable[(int)StyleIndex.Interface] = MakeTokenStyle(Styles.ColorYellow1, Styles.Opacity);
 			styleTable[(int)StyleIndex.Method] = MakeTokenStyle(Styles.Xe6db74);
@@ -412,6 +414,25 @@ namespace B站专栏CSharp代码高亮 {
 						var methodDeclaration = syntaxToken.AsNode() as MethodDeclarationSyntax;
 						return (StyleIndex.Method, methodDeclaration.Identifier.Span);
 					}
+				case SyntaxKind.ConstructorDeclaration: {
+						var constructorDeclaration = syntaxToken.AsNode() as ConstructorDeclarationSyntax;
+						if (GetStyle(constructorDeclaration.Parent) is var (style, _)) {
+							return (style, constructorDeclaration.Identifier.Span);
+						}
+						return null;
+					}
+				case SyntaxKind.DelegateDeclaration: {
+						var delegateDeclaration = syntaxToken.AsNode() as DelegateDeclarationSyntax;
+						return (StyleIndex.Delegate, delegateDeclaration.Identifier.Span);
+					}
+				case SyntaxKind.LocalFunctionStatement: {
+						var localFunctio = syntaxToken.AsNode() as LocalFunctionStatementSyntax;
+						return (StyleIndex.Method, localFunctio.Identifier.Span);
+					}
+				case SyntaxKind.SingleVariableDesignation: {
+						var singleVariableDesignation = syntaxToken.AsNode() as SingleVariableDesignationSyntax;
+						return (StyleIndex.Local, singleVariableDesignation.Identifier.Span);
+					}
 				case SyntaxKind.TypeParameter:
 					return (StyleIndex.TypeParam, syntaxToken.Span);
 				case SyntaxKind.OpenParenToken:
@@ -524,6 +545,7 @@ namespace B站专栏CSharp代码高亮 {
 				case SymbolKind.NamedType:
 					if (symbol is INamedTypeSymbol namedType) {
 						switch (namedType.TypeKind) {
+							case TypeKind.Delegate: return (StyleIndex.Delegate, syntaxSpan);
 							case TypeKind.Class: return (StyleIndex.Class, syntaxSpan);
 							case TypeKind.Struct: return (StyleIndex.Struct, syntaxSpan);
 							case TypeKind.Interface: return (StyleIndex.Interface, syntaxSpan);
