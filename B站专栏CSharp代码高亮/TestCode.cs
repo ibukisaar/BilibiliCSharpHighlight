@@ -59,10 +59,10 @@ namespace Calculator {
 
 			Parser(string expr) {
 				this.expr = expr;
-				ParseMulDiv = BinaryParserGenerate(ParsePow,
+				ParseMulDiv = GenerateBinaryParser(ParsePow,
 					("*", (x, y) => Expr.Multiply(x, y)),
 					("/", (x, y) => Expr.Divide(x, y)));
-				ParseAddSub = BinaryParserGenerate(ParseMulDiv,
+				ParseAddSub = GenerateBinaryParser(ParseMulDiv,
 					("+", (x, y) => Expr.Add(x, y)),
 					("-", (x, y) => Expr.Subtract(x, y)));
 			}
@@ -91,7 +91,7 @@ namespace Calculator {
 			/// </summary>
 			/// <param name="nextParser">下一级解析器</param>
 			/// <param name="ops"></param>
-			Func<Expr> BinaryParserGenerate(Func<Expr> nextParser,
+			Func<Expr> GenerateBinaryParser(Func<Expr> nextParser,
 				params (string Op, Func<Expr, Expr, Expr> Creator)[] ops) {
 				return () => {
 					var left = nextParser();
@@ -199,7 +199,7 @@ namespace Calculator {
 		}
 
 		static TDelegate Lambda<TDelegate>(string expr) where TDelegate : Delegate
-			=> Parser.Parse(expr).Compile() as TDelegate;
+			=> (TDelegate)Parser.Parse(expr).Compile();
 
 		static void Main(string[] args) {
 			void Print(double value) => Console.WriteLine(value);

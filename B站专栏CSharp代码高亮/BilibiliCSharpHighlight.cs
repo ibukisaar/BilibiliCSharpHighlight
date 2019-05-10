@@ -472,8 +472,10 @@ namespace B站专栏CSharp代码高亮 {
 							return (StyleIndex.Keyword, syntaxToken.Span);
 						case ArgumentListSyntax args:
 							switch (args.Parent) {
-								case InvocationExpressionSyntax { Expression: IdentifierNameSyntax methodName }:
-									if (methodName.Identifier.Text == "nameof") return (StyleIndex.Keyword, syntaxToken.Span);
+								case InvocationExpressionSyntax { Expression: IdentifierNameSyntax methodName }: {
+										if (methodName.Identifier.Text == "nameof") return (StyleIndex.Keyword, syntaxToken.Span);
+										if (GetSymbolStyle(methodName, syntaxToken.Span) is var (style, span)) return (style, span);
+									}
 									break;
 								case InvocationExpressionSyntax { Expression: MemberAccessExpressionSyntax memberAccessExpr }: {
 										if (GetSymbolStyle(memberAccessExpr, syntaxToken.Span) is var (style, span)) return (style, span);
