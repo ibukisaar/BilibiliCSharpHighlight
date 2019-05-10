@@ -109,6 +109,7 @@ namespace B站专栏CSharp代码高亮 {
 			Local,
 			Param,
 			Pointer,
+			AddressOf,
 			Error,
 		}
 
@@ -150,6 +151,7 @@ namespace B站专栏CSharp代码高亮 {
 			styleTable[(int)StyleIndex.Local] = MakeTokenStyle(Styles.ColorLightBlue1);
 			styleTable[(int)StyleIndex.Param] = MakeTokenStyle(Styles.ColorLightBlue1);
 			styleTable[(int)StyleIndex.Pointer] = MakeTokenStyle(Styles.ColorPink1);
+			styleTable[(int)StyleIndex.AddressOf] = MakeTokenStyle(Styles.ColorPink1);
 			styleTable[(int)StyleIndex.Error] = MakeTokenStyle(Styles.ColorPink3);
 		}
 
@@ -433,6 +435,10 @@ namespace B站专栏CSharp代码高亮 {
 						var singleVariableDesignation = syntaxToken.AsNode() as SingleVariableDesignationSyntax;
 						return (StyleIndex.Local, singleVariableDesignation.Identifier.Span);
 					}
+				case SyntaxKind.CatchDeclaration: {
+						var catchDeclaration = syntaxToken.AsNode() as CatchDeclarationSyntax;
+						return (StyleIndex.Local, catchDeclaration.Identifier.Span);
+					}
 				case SyntaxKind.TypeParameter:
 					return (StyleIndex.TypeParam, syntaxToken.Span);
 				case SyntaxKind.OpenParenToken:
@@ -444,6 +450,8 @@ namespace B站专栏CSharp代码高亮 {
 						case DoStatementSyntax _:
 						case ForStatementSyntax _:
 						case ForEachStatementSyntax _:
+						case SwitchStatementSyntax _:
+						case SwitchExpressionSyntax _:
 						case IfStatementSyntax _:
 							return (StyleIndex.ControlBrace, syntaxToken.Span);
 						case BlockSyntax block:
@@ -486,7 +494,9 @@ namespace B站专栏CSharp代码高亮 {
 				case SyntaxKind.IdentifierToken: {
 						var token = syntaxToken.AsToken();
 						switch (token.Text) {
-							case "nameof": return (StyleIndex.Keyword, token.Span);
+							case "nameof":
+							case "unmanaged":
+								return (StyleIndex.Keyword, token.Span);
 						}
 						return null;
 					}
@@ -497,6 +507,16 @@ namespace B站专栏CSharp代码高亮 {
 				case SyntaxKind.PointerType: {
 						var pointerType = syntaxToken.AsNode() as PointerTypeSyntax;
 						return (StyleIndex.Pointer, pointerType.AsteriskToken.Span);
+					}
+				case SyntaxKind.AddressOfExpression: {
+						var addressOf = syntaxToken.AsNode() as PrefixUnaryExpressionSyntax;
+						return (StyleIndex.AddressOf, addressOf.OperatorToken.Span);
+					}
+				case SyntaxKind.EqualsGreaterThanToken: {
+						if (syntaxToken.Parent is SwitchExpressionArmSyntax) {
+							return (StyleIndex.ControlBrace, syntaxToken.Span);
+						}
+						return null;
 					}
 				default:
 					return null;
@@ -604,8 +624,13 @@ namespace B站专栏CSharp代码高亮 {
 					case XmlElementSyntax e:
 						foreach (var attr in e.StartTag.Attributes) {
 							styles.AsSpan(attr.Name.Span.Start, attr.Name.Span.End - attr.Name.Span.Start).Fill(StyleIndex.XmlAttr);
-							if (e.StartTag.Name.LocalName.Text == "param" && attr is XmlNameAttributeSyntax { Name: { LocalName: { Text: "name" } } } nameAttr) {
-								SetSyntaxStyle(nameAttr.Identifier);
+							if (attr is XmlNameAttributeSyntax nameAttr) {
+								switch (e.StartTag.Name.LocalName.Text) {
+									case "param":
+									case "typeparam":
+										SetSyntaxStyle(nameAttr.Identifier);
+										break;
+								}
 							}
 						}
 						foreach (var child in e.Content) Visit(child);
@@ -615,7 +640,13 @@ namespace B站专栏CSharp代码高亮 {
 							styles.AsSpan(attr.Name.Span.Start, attr.Name.Span.End - attr.Name.Span.Start).Fill(StyleIndex.XmlAttr);
 							switch (attr) {
 								case XmlCrefAttributeSyntax a:
+									styles.AsSpan(a.Cref.Span.Start, a.Cref.Span.End - a.Cref.Span.Start).Fill(StyleIndex.None);
 									SetSyntaxStyle(a.Cref);
+									break;
+								case XmlNameAttributeSyntax a:
+									if (e.Name.LocalName.Text == "paramref") {
+										SetSyntaxStyle(a.Identifier);
+									}
 									break;
 							}
 						}
@@ -661,11 +692,13 @@ namespace B站专栏CSharp代码高亮 {
 					AppendSpan(i);
 					htmlBuilder.Append("<br>");
 					prevStyle = null;
+					spanBuilder.Clear();
 					i++;
 				} else if (code[i] == '\r' && i + 1 < code.Length && code[i + 1] == '\n') {
 					AppendSpan(i);
 					htmlBuilder.Append("<br>");
 					prevStyle = null;
+					spanBuilder.Clear();
 					i += 2;
 				} else if (code[i] == '\t') {
 					spanBuilder.Append("  ");
