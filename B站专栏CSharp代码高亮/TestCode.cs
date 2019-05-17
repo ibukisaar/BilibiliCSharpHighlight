@@ -36,6 +36,7 @@ namespace Calculator {
 		/// atom
 		/// 	: Id
 		/// 	| Number
+		/// 	| '(' addSub ')'
 		/// 	;
 		/// </remarks>
 		class Parser {
